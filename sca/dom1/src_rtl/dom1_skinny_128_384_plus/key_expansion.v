@@ -1,3 +1,14 @@
+/*
+ Designer: Mustafa Khairallah
+ Nanyang Technological University
+ Singapore
+ Date: July, 2021
+ */
+
+/* 
+ TK3 Key expansion corresponding to the 
+ secret key in Romulus. 
+ */
 module key_expansion (/*AUTOARG*/
    // Outputs
    ko,

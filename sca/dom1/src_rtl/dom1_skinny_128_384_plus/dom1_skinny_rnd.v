@@ -1,3 +1,14 @@
+/*
+ Designer: Mustafa Khairallah
+ Nanyang Technological University
+ Singapore
+ Date: July, 2021
+ */
+
+/* 
+ The round function of Skinny protected
+ with first order domain-oriented masking.
+ */
 module dom1_skinny_rnd (/*AUTOARG*/
    // Outputs
    ssho0, ssho1,

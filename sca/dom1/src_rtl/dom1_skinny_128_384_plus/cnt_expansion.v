@@ -1,3 +1,14 @@
+/*
+ Designer: Mustafa Khairallah
+ Nanyang Technological University
+ Singapore
+ Date: July, 2021
+ */
+
+/* 
+ TK1 Key expansion corresponding to the 
+ counter in Romulus. 
+ */
 module cnt_expansion (/*AUTOARG*/
    // Outputs
    ko,

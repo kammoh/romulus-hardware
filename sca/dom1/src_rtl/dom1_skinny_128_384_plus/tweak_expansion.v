@@ -1,3 +1,14 @@
+/*
+ Designer: Mustafa Khairallah
+ Nanyang Technological University
+ Singapore
+ Date: July, 2021
+ */
+
+/* 
+ TK2 Key expansion corresponding to the 
+ nonce/associated data in Romulus. 
+ */
 module tweak_expansion (/*AUTOARG*/
    // Outputs
    ko,

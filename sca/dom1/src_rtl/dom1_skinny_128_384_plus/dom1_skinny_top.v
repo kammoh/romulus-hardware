@@ -1,3 +1,14 @@
+/*
+ Designer: Mustafa Khairallah
+ Nanyang Technological University
+ Singapore
+ Date: July, 2021
+ */
+
+/* 
+ A stand-alone version of Skinny protected
+ with first order domain-oriented masking.
+ */
 module dom1_skinny_top (/*AUTOARG*/
                         // Outputs
                         sshr0, sshr1, done,
