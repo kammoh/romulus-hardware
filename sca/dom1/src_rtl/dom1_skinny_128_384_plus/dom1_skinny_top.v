@@ -48,7 +48,7 @@ module dom1_skinny_top (/*AUTOARG*/
 			{ssho1,ssho0,ksh1n,ksh0n,tn,cntn,rn},
 			iwr,ord,clk,en[4]);
    
-   assign rn = ri;   
+   assign rn = {ri[126:0],ri[127]}^{120'h0,ri[127],4'h0,ri[127],ri[127],1'b0};   
    
    dom1_skinny_rnd state_update (ssho0,ssho1,sshr0,sshr1,rksh0,rksh1,ri,en[3:0],clk);
    key_expansion key_schedule_0 (ksh0n,kshr0);
