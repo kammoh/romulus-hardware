@@ -67,7 +67,10 @@ module dom1_skinny_tb () ;
 		  @(posedge clk);
 		  if (answer == 128'hff38d1d24c864c4352a853690fe36e5e) begin
 		     $display("Successful test");		     
-		  end		  
+		  end
+		  else begin
+		     $display("Failed test");
+		  end
                   $finish;                
                end
             end
