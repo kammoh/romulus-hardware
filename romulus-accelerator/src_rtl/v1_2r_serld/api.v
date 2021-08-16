@@ -1,11 +1,13 @@
 module api (/*AUTOARG*/
-            // Outputs
-            pdo_data, pdi, pdi_ready, sdi_ready, pdo_valid, do_last, domain, srst, senc,
-            sse, xrst, xenc, xse, yrst, yenc, yse, zrst, zenc, zse, erst,
-            decrypt, correct_cnt, constant, constant2, tk1s,
-            // Inputs
-            counter, pdi_data, pdo, sdi_data, pdi_valid, sdi_valid, pdo_ready, clk, rst
-            ) ;
+   // Outputs
+   pdo_data, pdi, pdi_ready, sdi_ready, pdo_valid, do_last, domain,
+   srst, senc, sse, xrst, xenc, xse, yrst, yenc, yse, zrst, zenc, zse,
+   erst, decrypt, correct_cnt, constant, constant2, tk1s, hashmode,
+   hashmode_first_cycle, hash_cipher,
+   // Inputs
+   counter, pdi_data, pdo, pdo_hash_l, pdo_hash_s, sdi_data,
+   pdi_valid, sdi_valid, pdo_ready, clk, rst
+   ) ;
    // SKINNY FINAL CONSTANT
    parameter FINCONST = 7'b011010;
 
@@ -114,7 +116,8 @@ module api (/*AUTOARG*/
    parameter encrypthash  = 42;
    parameter feedforward  = 43;  
    parameter outputhash0  = 44;
-   parameter outputhash1  = 45;   
+   parameter outputhash1  = 45;
+   parameter outputhash2  = 46;   
    
    output reg [31:0] pdo_data, pdi;
    output reg        pdi_ready, sdi_ready, pdo_valid, do_last;
@@ -129,10 +132,11 @@ module api (/*AUTOARG*/
    output reg        correct_cnt;
    output [5:0]      constant; 
    output [5:0]      constant2;         
-   output reg        tk1s; 
+   output reg        tk1s;
+   output reg 	     hashmode, hashmode_first_cycle, hash_cipher;   
    
    input [55:0]      counter;   
-   input [31:0]      pdi_data, pdo, sdi_data;
+   input [31:0]      pdi_data, pdo, pdo_hash_l, pdo_hash_s, sdi_data;
    input             pdi_valid, sdi_valid, pdo_ready;
 
    input             clk, rst;
@@ -231,7 +235,10 @@ module api (/*AUTOARG*/
       adevenn <= adeven;
       mevenn <= meven;
       mpadn <= mpad;
-      adpadn <= adpad;	       
+      adpadn <= adpad;	   
+      hashmode <= 0;
+      hashmode_first_cycle <= 0;
+      hash_cipher <= 0;      
       case (fsm) 
         idle: begin
            pdi_ready <= 1;
@@ -1594,14 +1601,14 @@ module api (/*AUTOARG*/
 	      c2n <= 1;
            end // if (cnt == FINCONST)     
         end // case: encrypttag
-	/*hmsgheader: begin
+	hmsgheader: begin
 	   if (pdi_valid) begin
 	      pdi_ready <= 1;
 	      if (pdi_data[31:28] == PLAIN) begin
 		 seglenn <= pdi_data[15:0];
                  flagsn <= pdi_data[27:24];
 		 if ((pdi_data[25] == 1) && (pdi_data[15:0] < 32)) begin
-		    fsmn <= storehmsgp;
+		    fsmn <= storehmsgp0;
 		 end
 		 else begin
 		    fsmn <= storehmsg0;
@@ -1613,15 +1620,16 @@ module api (/*AUTOARG*/
 	   if (pdi_valid) begin
 	      pdi_ready <= 1;
 	      cntn <= {cnt[4:0], cnt[5]^cnt[4]^1'b1};
+	      hashmode <= 1;	      
 	      if (cnt == 5'h01) begin
+		 hashmode_first_cycle <= 1;		 
                  seglenn <= seglen - 16;
               end
 	      if (cnt == 5'h0F) begin
-		 cnt <= 5'h01;		 
-		 fsmn <= storehsmg0;
+		 cntn <= 5'h01;		 
+		 fsmn <= storehmsg0;
 	      end
 	   end
-	end
 	end	
 	storehmsg1: begin
 	   if (pdi_valid) begin
@@ -1631,12 +1639,60 @@ module api (/*AUTOARG*/
                  seglenn <= seglen - 16;
               end
 	      if (cnt == 5'h0F) begin
-		 cnt <= 5'h01;
+		 cntn <= 5'h01;
 		 fsmn <= encrypthash;
 	      end
 	   end
+	end // case: storehmsg1
+	encrypthash: begin
+	   cntn <= {cnt[4:0], cnt[5]^cnt[4]^1'b1};
+	   senc <= 1;
+           xenc <= 1;
+           yenc <= 1;
+	   hash_cipher <= 1;	   
+	   if (constant == FINCONST) begin
+              cntn <= 6'h01;
+              if (seglen == 0) begin
+		 if (flags[1] == 1) begin
+		    fsmn <= outputhash0;	
+		 end	 
+	      end
+	      else begin
+		 fsmn <= storehmsg0;		 
+	      end
+	   end
 	end
-	encrypthash */
+	outputhash0: begin
+	   if (pdo_ready) begin
+              pdi <= 0;    
+              pdo_valid <= 1;      
+              pdo_data <= {TAG,4'h3,8'h0,16'h010};
+              fsmn <= outputhash1;    
+              cntn <= 6'h01;	      
+           end
+	end
+	outputhash1: begin
+	   if (pdo_ready) begin
+	      pdo_data <= pdo_hash_l;
+	      pdo_valid <= 1;      
+	      cntn <= {cnt[4:0], cnt[5]^cnt[4]^1'b1};
+	      if (cnt == 6'h0F) begin
+                 fsmn <= outputhash2;
+                 cntn <= 6'h01;
+              end
+	   end
+	end // case: outputhash1	
+	outputhash2: begin
+	   if (pdo_ready) begin
+	      pdo_data <= pdo_hash_s;
+	      pdo_valid <= 1;      
+	      cntn <= {cnt[4:0], cnt[5]^cnt[4]^1'b1};
+	      if (cnt == 6'h0F) begin
+                 fsmn <= statuse;
+                 cntn <= 6'h01;
+              end
+	   end
+	end // case: outputhash2	
       endcase // case (fsm)      
    end
    
