@@ -1,0 +1,68 @@
+
+
+name = "Romulus-N_x2"
+description = "Romulus-N 2 rounds per cycle"
+author = "[Mustafa Khairallah] (mustafam001@e.ntu.edu.sg)"
+
+language.vhdl.version = 2008
+
+[lwc.aead]
+algorithm = "romulusn"
+input_sequence.encrypt = ["ad", "npub", "data"]
+input_sequence.decrypt = ["ad", "npub", "data", "tag"]
+key_reuse = true
+
+# [lwc.hash]
+# algorithm = "romulush"
+
+[lwc]
+block_bits = { AD = 128, XT = 128 }
+
+
+[rtl]
+sources = [
+    "src_rtl/v2_2r_serld/SkinnyPKG.vhd",
+    "src_rtl/v2_2r_serld/state_reg_cg.v",
+    "src_rtl/v2_2r_serld/key_reg_cg.v",
+    "src_rtl/v2_2r_serld/state_reg.v",
+    "src_rtl/v2_2r_serld/key_reg.v",
+    "src_rtl/v2_2r_serld/state_update_32b.v",
+    "src_rtl/v2_2r_serld/tky_update_32b.v",
+    "src_rtl/v2_2r_serld/tkx_update_32b.v",
+    "src_rtl/v2_2r_serld/tkz_update_32b.v",
+    "src_rtl/v2_2r_serld/MixColumns.vhd",
+    "src_rtl/v2_2r_serld/Permutation.vhd",
+    "src_rtl/v2_2r_serld/ShiftRows.vhd",
+    "src_rtl/v2_2r_serld/SBox.vhd",
+    "src_rtl/v2_2r_serld/HPermutation.vhd",
+    "src_rtl/v2_2r_serld/RoundFunction.vhd",
+    "src_rtl/v2_2r_serld/KeyExpansionNoReg.vhd",
+    # "src_rtl/v2_2r_serld/lfsr2_28.v",
+    "src_rtl/v2_2r_serld/lfsr2_20.v",
+    "src_rtl/v2_2r_serld/lfsr_gf56.v",
+    # "src_rtl/v2_2r_serld/lfsr3_28.v",
+    "src_rtl/v2_2r_serld/lfsr3_20.v",
+    "src_rtl/v2_2r_serld/pt8.v",
+    "src_rtl/v2_2r_serld/pt4.v",
+    "src_rtl/v2_2r_serld/mode_top.v",
+    "src_rtl/v2_2r_serld/api.v",
+    "src_rtl/v2_2r_serld/LWC.v",
+]
+top = "LWC"
+
+[tb]
+sources = [
+    "../LWC/LWC_config_32.vhd",
+    "../LWC/NIST_LWAPI_pkg.vhd",
+    "../LWC/LWC_TB.vhd",
+]
+top = "LWC_TB"
+
+
+[tb.generics]
+# G_FNAME_PDI.file = "BENCH_KAT/Romulus-N_1r/timing_tests/pdi.txt"
+# G_FNAME_SDI.file = "BENCH_KAT/Romulus-N_1r/timing_tests/sdi.txt"
+# G_FNAME_DO.file =  "BENCH_KAT/Romulus-N_1r/timing_tests/do.txt"
+G_TEST_MODE = 0
+G_MAX_FAILURES = 0
+# G_PERIOD_PS = 20000
